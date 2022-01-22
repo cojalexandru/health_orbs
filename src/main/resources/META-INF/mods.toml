@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="All Rights Reserved"
+[[mods]]
+modId="healthorbs"
+version="1.032"
+displayName="Health Orbs"
+logoFile="healthorbs.png"
+credits="Health Orbs by The Decursio Team"
+description='''
+A small mod adding pickable Health Orbs when mobs are killed.
+'''
+
+[[dependencies.healthpickups]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.healthpickups]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"
