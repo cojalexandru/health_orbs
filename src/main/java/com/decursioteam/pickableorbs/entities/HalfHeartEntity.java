@@ -1,14 +1,18 @@
-package com.decursioteam.healthorbs.core.entities;
+package com.decursioteam.pickableorbs.entities;
 
-import com.decursioteam.healthorbs.HealthOrbs;
-import com.decursioteam.healthorbs.core.HealthPickupsConfig;
-import com.decursioteam.healthorbs.core.Registry;
+import com.decursioteam.pickableorbs.PickableOrbs;
+import com.decursioteam.pickableorbs.datagen.Orbs;
+import com.decursioteam.pickableorbs.datagen.OrbsData;
+import com.decursioteam.pickableorbs.registries.Registry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
@@ -16,26 +20,35 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
-import org.jetbrains.annotations.NotNull;
+import net.minecraftforge.registries.ForgeRegistries;
 
-public class RareHalfHeartEntity extends Entity {
+import java.util.Objects;
+
+import static com.decursioteam.pickableorbs.PickableOrbs.MOD_ID;
+
+public class HalfHeartEntity extends Entity {
     public int tickCount;
     public int age;
     public int throwTime;
     private int health = 5;
-    public int value;
+    protected final Orbs orbData;
+    protected final String orbType;
     private Player followingPlayer;
     private int followingTime;
 
-    public RareHalfHeartEntity(Level world, double x, double y, double z) {
-        this(HealthOrbs.RARE_HALF_HEART_ENTITY.get(), world);
+    public HalfHeartEntity(EntityType<HalfHeartEntity> type, Level world, double x, double y, double z, String orbType, Orbs orbData) {
+        super(type, world);
+        this.orbData = orbData;
+        this.orbType = orbType;
         this.setPos(x, y, z);
         this.yRotO = (float) (this.random.nextDouble() * 360.0D);
         this.setDeltaMovement((this.random.nextDouble() * (double) 0.2F - (double) 0.1F) * 2.0D, this.random.nextDouble() * 0.2D * 2.0D, (this.random.nextDouble() * (double) 0.2F - (double) 0.1F) * 2.0D);
     }
 
-    public RareHalfHeartEntity(EntityType<? extends RareHalfHeartEntity> p_i50382_1_, Level p_i50382_2_) {
-        super(p_i50382_1_, p_i50382_2_);
+    public HalfHeartEntity(EntityType<HalfHeartEntity> type, Level world, String orbType) {
+        super(type, world);
+        this.orbType = orbType;
+        this.orbData = OrbsData.getOrbData(orbType);
     }
 
     protected boolean isMovementNoisy() {
@@ -80,7 +93,8 @@ public class RareHalfHeartEntity extends Entity {
         if (this.onGround) {
             this.setDeltaMovement(this.getDeltaMovement().multiply(1.0D, -0.9D, 1.0D));
         }
-        if(HealthPickupsConfig.COMMON.rhpFollowPlayers.get()) {
+
+        if(orbData.getExtraData().getFollowPlayer()) {
             if (this.followingTime < this.tickCount - 20 + this.getId() % 100) {
                 if (this.followingPlayer == null || this.followingPlayer.distanceToSqr(this) > 64.0D) {
                     this.followingPlayer = this.level.getNearestPlayer(this, 8.0D);
@@ -119,7 +133,7 @@ public class RareHalfHeartEntity extends Entity {
     protected void doWaterSplashEffect() {
     }
 
-    public boolean hurt(@NotNull DamageSource p_70097_1_, float p_70097_2_) {
+    public boolean hurt(DamageSource p_70097_1_, float p_70097_2_) {
         if (this.level.isClientSide || this.isRemoved()) return false; //Forge: Fixes MC-53850
         if (this.isInvulnerableTo(p_70097_1_)) {
             return false;
@@ -135,15 +149,27 @@ public class RareHalfHeartEntity extends Entity {
     }
 
     @Override
-    public void playerTouch(@NotNull Player playerEntity) {
+    public void playerTouch(Player playerEntity) {
         if (!this.level.isClientSide) {
             if (this.throwTime == 0) {
-                if(this.age >= HealthPickupsConfig.COMMON.rhpPickupDelay.get()) {
+                if (this.age >= orbData.getExtraData().getPickupDelay()) {
                     playerEntity.take(this, 1);
-                    playerEntity.heal(HealthPickupsConfig.COMMON.rhpValue.get().floatValue());
-                    if (HealthPickupsConfig.COMMON.healthPickupSound.get())
-                        this.playSound(Registry.GET_HEART_SOUND, 0.4F, 0.95F);
-                    this.remove(RemovalReason.KILLED);
+                    int effectMultiplier = orbData.getData().getEffectMultiplier();
+                    int effectDuration = orbData.getData().getEffectDuration();
+                    if(Objects.equals(orbData.getData().getType(), new ResourceLocation("pickableorbs:percentage_healing"))){
+                        playerEntity.heal((float) (playerEntity.getMaxHealth() * ((float)orbData.getData().getEffectMultiplier()) / 100.0));
+                    }
+                    else try {
+                        playerEntity.addEffect(new MobEffectInstance(Objects.requireNonNull(ForgeRegistries.MOB_EFFECTS.getValue(orbData.getData().getType())), effectDuration, effectMultiplier));
+                    } catch (Exception e) {
+                        PickableOrbs.LOGGER.error("[PickableOrbs] - The orb type of: " + orbData.getData().getName() + " is invalid.");
+                    }
+
+
+                    if(!orbData.getExtraData().getPickupMessage().isEmpty())
+                        playerEntity.displayClientMessage(new TextComponent(orbData.getExtraData().getPickupMessage()), true);
+                    if(orbData.getExtraData().getSound()) this.playSound(Registry.GET_HEART_SOUND, 0.4F, 0.95F);
+                    this.remove(RemovalReason.DISCARDED);
                 }
             }
         }
