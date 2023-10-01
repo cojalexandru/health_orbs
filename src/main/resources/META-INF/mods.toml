@@ -1,9 +1,9 @@
 modLoader="javafml"
-loaderVersion="[38,)"
+loaderVersion="[43,)"
 license="All Rights Reserved"
 [[mods]]
 modId="pickableorbs"
-version="2.3"
+version="1.19.2-3.0-rc1"
 displayName="Pickable Orbs"
 logoFile="healthorbs.png"
 credits="Pickable Orbs by The Decursio Team"
@@ -14,12 +14,12 @@ A small mod adding pickable configurable Orbs.
 [[dependencies.pickableorbs]]
     modId="forge"
     mandatory=true
-    versionRange="[38,)"
+    versionRange="[43,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.pickableorbs]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.18,1.19)"
+    versionRange="[1.19.2,1.20)"
     ordering="NONE"
     side="BOTH"

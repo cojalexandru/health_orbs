@@ -5,6 +5,7 @@
     "color": "#FF0046",
     "blockList": ["minecraft:spawner"],
     "blockListType": "whitelist",
+    "texture": "pickableorbs:textures/entity/plain_orb.png",
     "blockDropChance": 100.0,
     "entityList": ["minecraft:pig", "minecraft:sheep", "minecraft:rabbit", "minecraft:villager", "minecraft:cow", "minecraft:fox", "minecraft:chicken", "minecraft:horse", "minecraft:donkey"],
     "entityListType": "blacklist",

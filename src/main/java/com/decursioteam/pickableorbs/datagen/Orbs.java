@@ -6,7 +6,9 @@ import com.decursioteam.pickableorbs.codec.OrbData;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -33,14 +35,14 @@ public class Orbs{
     protected JsonObject rawData;
     protected ResourceLocation registryID;
     protected EntityType<?> entityType;
-    protected TranslatableComponent displayName;
+    protected MutableComponent displayName;
 
     private Orbs(OrbData orbData, ExtraOptions extraData) {
         this.orbData = orbData;
         this.extraData = extraData;
         this.rawData = OrbsData.getRegistry().getRawOrbsData(orbData.getName());
         this.registryID = new ResourceLocation(PickableOrbs.MOD_ID + ":" + orbData.getName() + "_orb");
-        this.displayName = new TranslatableComponent("entity.pickableorbs." + orbData.getName() + "_orb");
+        this.displayName = Component.translatable("entity.pickableorbs." + orbData.getName() + "_orb");
     }
 
     private Orbs(Mutable mutable) {
@@ -63,7 +65,7 @@ public class Orbs{
     public @NotNull
     EntityType<?> getEntityType() {
         if (entityType == null) {
-            this.entityType = ForgeRegistries.ENTITIES.getValue(ResourceLocation.tryParse(registryID.toString()));;
+            this.entityType = ForgeRegistries.ENTITY_TYPES.getValue(ResourceLocation.tryParse(registryID.toString()));;
         }
         return entityType == null ? EntityType.EXPERIENCE_ORB : entityType;
     }
@@ -77,7 +79,7 @@ public class Orbs{
         return rawData;
     }
 
-    public TranslatableComponent getDisplayName() {
+    public MutableComponent getDisplayName() {
         return displayName;
     }
 
@@ -110,8 +112,8 @@ public class Orbs{
             return this;
         }
 
-        public Mutable setDisplayName(TranslatableComponent displayName) {
-            this.displayName = displayName;
+        public Mutable setDisplayName(TranslatableContents displayName) {
+            this.displayName = MutableComponent.create(displayName);
             return this;
         }
 

@@ -1,7 +1,8 @@
 {
   "OrbData": {
     "type": "minecraft:instant_damage",
-    "effectMultiplier": 2,
+    "effectMultiplier": 0,
+    "effectDuration": 10,
     "color": "#2B2B2B",
     "blockList": [],
     "blockListType": "whitelist",

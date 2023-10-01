@@ -1,7 +1,6 @@
 package com.decursioteam.pickableorbs.codec;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.Encoder;
@@ -12,6 +11,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 
@@ -22,14 +22,15 @@ public class OrbData {
     public static Codec<OrbData> codec(String name) {
         return RecordCodecBuilder.create(instance -> instance.group(
                 MapCodec.of(Encoder.empty(), Decoder.unit(() -> name)).forGetter(OrbData::getName),
-                ResourceLocation.CODEC.fieldOf("type").orElse(MobEffects.HEAL.getRegistryName()).forGetter(OrbData::getType),
+                ResourceLocation.CODEC.fieldOf("type").orElse(ForgeRegistries.MOB_EFFECTS.getKey(MobEffects.HEAL)).forGetter(OrbData::getType),
                 Codec.intRange(0, 100).fieldOf("effectMultiplier").orElse(1).forGetter(OrbData::getEffectMultiplier),
                 Codec.intRange(0, Integer.MAX_VALUE).fieldOf("effectDuration").orElse(100).forGetter(OrbData::getEffectDuration),
                 Codec.STRING.fieldOf("color").forGetter(OrbData::getColor),
-                ResourceLocation.CODEC.listOf().fieldOf("blockList").orElse(ImmutableList.of(Objects.requireNonNull(Blocks.SPAWNER.getRegistryName()))).forGetter(OrbData::getBlockSet),
+                ResourceLocation.CODEC.fieldOf("texture").orElse(new ResourceLocation("pickableorbs:textures/entity/plain_orb.png")).forGetter(OrbData::getTexture),
+                ResourceLocation.CODEC.listOf().fieldOf("blockList").orElse(ImmutableList.of(Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(Blocks.SPAWNER)))).forGetter(OrbData::getBlockSet),
                 Codec.STRING.fieldOf("blockListType").orElse("whitelist").forGetter(OrbData::getBlockListType),
                 Codec.doubleRange(0.0, 100.0).fieldOf("blockDropChance").orElse(0.0).forGetter(OrbData::getBlockDropChance),
-                ResourceLocation.CODEC.listOf().fieldOf("entityList").orElse(ImmutableList.of(Objects.requireNonNull(EntityType.RABBIT.getRegistryName()))).forGetter(OrbData::getEntitySet),
+                ResourceLocation.CODEC.listOf().fieldOf("entityList").orElse(ImmutableList.of(Objects.requireNonNull(ForgeRegistries.ENTITY_TYPES.getKey(EntityType.RABBIT)))).forGetter(OrbData::getEntitySet),
                 Codec.STRING.fieldOf("entityListType").orElse("whitelist").forGetter(OrbData::getEntityListType),
                 Codec.doubleRange(0.0, 100.0).fieldOf("entityDropChance").orElse(0.0).forGetter(OrbData::getEntityDropChance)
         ).apply(instance, OrbData::new));
@@ -40,6 +41,7 @@ public class OrbData {
     protected double entityDropChance;
     protected int effectMultiplier;
     protected int effectDuration;
+    protected ResourceLocation texture;
     protected List<ResourceLocation> blockSet;
     protected List<ResourceLocation> entitySet;
     protected String color;
@@ -48,7 +50,7 @@ public class OrbData {
     protected String blockListType;
     protected String entityListType;
 
-    private OrbData(String name, ResourceLocation type, int effectMultiplier, int effectDuration, String color, List<ResourceLocation> blockSet, String blockListType, double blockDropChance, List<ResourceLocation> entitySet, String entityListType, double entityDropChance){
+    private OrbData(String name, ResourceLocation type, int effectMultiplier, int effectDuration, String color, ResourceLocation texture, List<ResourceLocation> blockSet, String blockListType, double blockDropChance, List<ResourceLocation> entitySet, String entityListType, double entityDropChance){
         this.name = name;
         this.effectDuration = effectDuration;
         this.effectMultiplier = effectMultiplier;
@@ -58,13 +60,14 @@ public class OrbData {
         this.blockListType = blockListType;
         this.entityListType = entityListType;
         this.color = color;
+        this.texture = texture;
         this.blockSet = blockSet;
         this.entitySet = entitySet;
     }
 
     private OrbData(String name) {
         this.name = name;
-        this.type = MobEffects.HEAL.getRegistryName();
+        this.type = ForgeRegistries.MOB_EFFECTS.getKey(MobEffects.HEAL);
         this.effectMultiplier = 1;
         this.effectDuration = 100;
         this.blockDropChance = 1.0;
@@ -72,6 +75,7 @@ public class OrbData {
 
         this.blockListType = "whitelist";
         this.entityListType = "blacklist";
+        this.texture = new ResourceLocation("pickableorbs:textures/entity/plain_orb.png");
         this.color = "#FF4500";
         this.blockSet = new ArrayList<>();
         this.entitySet = new ArrayList<>();
@@ -121,6 +125,10 @@ public class OrbData {
         return name;
     }
 
+    public ResourceLocation getTexture() {
+        return texture;
+    }
+
 
     public OrbData toImmutable() {
         return this;
@@ -128,8 +136,8 @@ public class OrbData {
 
     public static class Mutable extends OrbData {
 
-        public Mutable(String name, ResourceLocation type, int effectMultiplier, int effectDuration, String color, List<ResourceLocation> blockSet, String blockListType, double blockDropChance, List<ResourceLocation> entitySet, String entityListType, double entityDropChance) {
-            super(name, type, effectMultiplier, effectDuration, color, blockSet, blockListType, blockDropChance, entitySet, entityListType, entityDropChance);
+        public Mutable(String name, ResourceLocation type, int effectMultiplier, int effectDuration, String color, ResourceLocation texture, List<ResourceLocation> blockSet, String blockListType, double blockDropChance, List<ResourceLocation> entitySet, String entityListType, double entityDropChance) {
+            super(name, type, effectMultiplier, effectDuration, color, texture, blockSet, blockListType, blockDropChance, entitySet, entityListType, entityDropChance);
         }
 
         public Mutable(String name) {
@@ -182,7 +190,7 @@ public class OrbData {
 
         @Override
         public OrbData toImmutable() {
-            return new OrbData(this.name, this.type, this.effectMultiplier, this.effectDuration, this.color, this.blockSet, this.blockListType, this.blockDropChance, this.entitySet, this.entityListType, this.entityDropChance);
+            return new OrbData(this.name, this.type, this.effectMultiplier, this.effectDuration, this.color, this.texture, this.blockSet, this.blockListType, this.blockDropChance, this.entitySet, this.entityListType, this.entityDropChance);
         }
     }
 }

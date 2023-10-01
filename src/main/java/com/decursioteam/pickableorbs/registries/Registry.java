@@ -14,11 +14,11 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -32,26 +32,23 @@ import java.util.Locale;
 public class Registry {
 
     public static final Gson GSON = new Gson();
-    public static final SoundEvent GET_HEART_SOUND = new SoundEvent(new ResourceLocation(PickableOrbs.MOD_ID, "get_heart_sound"))
-            .setRegistryName("get_heart_sound");
 
-    @SubscribeEvent
-    public void registerSounds(RegistryEvent.Register<SoundEvent> event) {
-        IForgeRegistry<SoundEvent> soundEvents = event.getRegistry();
-        soundEvents.register(GET_HEART_SOUND);
-    }
+    public static final DeferredRegister<SoundEvent> REGISTRY = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, PickableOrbs.MOD_ID);
+    public static final RegistryObject<SoundEvent> GET_HEART_SOUND = REGISTRY.register("empty",
+            () -> new SoundEvent(new ResourceLocation(PickableOrbs.MOD_ID, "get_heart_sound")));
 
     public static void registerOrbTypes(){
        OrbsData.getRegistry().getOrbs().forEach((name, data) -> registerOrb(name));
     }
 
     public static void registerOrb(String name) {
-        final EntityType<? extends HalfHeartEntity> orbType = EntityType.Builder
+        RegistryObject<EntityType<? extends HalfHeartEntity>> registryObject = OrbsRegistry.ORB_TYPES.register(name, () -> EntityType.Builder
                 .<HalfHeartEntity>of((type, world) -> new HalfHeartEntity(type, world, name), MobCategory.MISC)
                 .sized(0.5f, 0.5f)
-                .build(name + "_orb");
-        OrbsRegistry.ORB_TYPES.register(name + "_orb", () -> orbType);
-        OrbsRegistry.getOrbs().put(name, orbType);
+                .build(name + "_orb"));
+        PickableOrbs.LOGGER.warn("ORBTYPE " + registryObject);
+        OrbsRegistry.getOrbs().put(name, registryObject);
+
     }
 
     public static void setupDefaultOrbs() {

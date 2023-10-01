@@ -6,8 +6,9 @@ import com.decursioteam.pickableorbs.datagen.OrbsData;
 import com.decursioteam.pickableorbs.registries.Registry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
@@ -23,8 +24,6 @@ import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Objects;
-
-import static com.decursioteam.pickableorbs.PickableOrbs.MOD_ID;
 
 public class HalfHeartEntity extends Entity {
     public int tickCount;
@@ -85,7 +84,7 @@ public class HalfHeartEntity extends Entity {
         this.move(MoverType.SELF, this.getDeltaMovement());
         float f = 0.98F;
         if (this.onGround) {
-            BlockPos pos = new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ());
+            BlockPos pos = new BlockPos((int) this.getX(), (int) (this.getY() - 1.0D), (int) this.getZ());
             f = this.level.getBlockState(pos).getFriction(this.level, pos, this) * 0.98F;
         }
 
@@ -167,8 +166,8 @@ public class HalfHeartEntity extends Entity {
 
 
                     if(!orbData.getExtraData().getPickupMessage().isEmpty())
-                        playerEntity.displayClientMessage(new TextComponent(orbData.getExtraData().getPickupMessage()), true);
-                    if(orbData.getExtraData().getSound()) this.playSound(Registry.GET_HEART_SOUND, 0.4F, 0.95F);
+                        playerEntity.displayClientMessage(Component.literal(orbData.getExtraData().getPickupMessage()), true);
+                    if(orbData.getExtraData().getSound()) this.playSound(Registry.GET_HEART_SOUND.get(), 0.4F, 0.95F);
                     this.remove(RemovalReason.DISCARDED);
                 }
             }
@@ -190,7 +189,7 @@ public class HalfHeartEntity extends Entity {
     }
 
     @Override
-    public Packet<?> getAddEntityPacket() {
-        return NetworkHooks.getEntitySpawningPacket(this);
+    public Packet<ClientGamePacketListener> getAddEntityPacket() {
+        return (Packet<ClientGamePacketListener>) NetworkHooks.getEntitySpawningPacket(this);
     }
 }

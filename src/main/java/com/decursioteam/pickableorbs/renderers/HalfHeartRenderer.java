@@ -1,6 +1,5 @@
 package com.decursioteam.pickableorbs.renderers;
 
-import com.decursioteam.pickableorbs.PickableOrbs;
 import com.decursioteam.pickableorbs.codec.ExtraOptions;
 import com.decursioteam.pickableorbs.codec.OrbData;
 import com.decursioteam.pickableorbs.entities.HalfHeartEntity;
@@ -26,8 +25,8 @@ import java.awt.*;
 @OnlyIn(Dist.CLIENT)
 public class HalfHeartRenderer extends EntityRenderer<HalfHeartEntity> {
 
-    private static final ResourceLocation HALF_HEART_TEXTURE = new ResourceLocation(PickableOrbs.MOD_ID, "textures/entity/plain_orb.png");
-    private static final RenderType RENDER_TYPE = RenderType.entityTranslucent(HALF_HEART_TEXTURE);
+    private ResourceLocation HALF_HEART_TEXTURE;
+    private RenderType RENDER_TYPE;
 
     protected final int r;
     protected final int g;
@@ -37,6 +36,8 @@ public class HalfHeartRenderer extends EntityRenderer<HalfHeartEntity> {
     public HalfHeartRenderer(EntityRendererProvider.Context renderManagerIn, OrbData orbData, ExtraOptions extraData) {
         super(renderManagerIn);
         this.shadowRadius = 0.15F;
+        this.HALF_HEART_TEXTURE = orbData.getTexture();
+        this.RENDER_TYPE = RenderType.entityTranslucent(HALF_HEART_TEXTURE);
         if(!orbData.getColor().contains("#")){
             String newColor = "#" + orbData.getColor();
             this.r = Color.decode(newColor).getRed();
