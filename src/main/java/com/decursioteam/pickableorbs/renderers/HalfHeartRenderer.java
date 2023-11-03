@@ -5,9 +5,7 @@ import com.decursioteam.pickableorbs.codec.OrbData;
 import com.decursioteam.pickableorbs.entities.HalfHeartEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -19,6 +17,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 import java.awt.*;
 
@@ -75,7 +75,7 @@ public class HalfHeartRenderer extends EntityRenderer<HalfHeartEntity> {
         int B = (int) ((Mth.sin(f8 + 0.0F) + 1.0F) * 0.5F * (float)b);
         p_225623_4_.translate(0.0D, (double) 0.1F, 0.0D);
         p_225623_4_.mulPose(this.entityRenderDispatcher.cameraOrientation());
-        p_225623_4_.mulPose(Vector3f.YP.rotationDegrees(180.0F));
+        p_225623_4_.mulPose(Axis.YP.rotationDegrees(180.0F));
         p_225623_4_.scale(0.3F, 0.3F, 0.3F);
         VertexConsumer ivertexbuilder = p_225623_5_.getBuffer(RENDER_TYPE);
         PoseStack.Pose matrixstack$entry = p_225623_4_.last();

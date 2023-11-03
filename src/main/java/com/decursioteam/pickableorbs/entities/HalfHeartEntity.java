@@ -72,31 +72,31 @@ public class HalfHeartEntity extends Entity {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.03D, 0.0D));
         }
 
-        if (this.level.getFluidState(this.blockPosition()).is(FluidTags.LAVA)) {
+        if (this.level().getFluidState(this.blockPosition()).is(FluidTags.LAVA)) {
             this.setDeltaMovement((double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F), (double) 0.2F, (double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F));
             this.playSound(SoundEvents.GENERIC_BURN, 0.4F, 2.0F + this.random.nextFloat() * 0.4F);
         }
 
-        if (!this.level.noCollision(this.getBoundingBox())) {
+        if (!this.level().noCollision(this.getBoundingBox())) {
             this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0D, this.getZ());
         }
 
         this.move(MoverType.SELF, this.getDeltaMovement());
         float f = 0.98F;
-        if (this.onGround) {
+        if (this.onGround()) {
             BlockPos pos = new BlockPos((int) this.getX(), (int) (this.getY() - 1.0D), (int) this.getZ());
-            f = this.level.getBlockState(pos).getFriction(this.level, pos, this) * 0.98F;
+            f = this.level().getBlockState(pos).getFriction(this.level(), pos, this) * 0.98F;
         }
 
         this.setDeltaMovement(this.getDeltaMovement().multiply((double) f, 0.98D, (double) f));
-        if (this.onGround) {
+        if (this.onGround()) {
             this.setDeltaMovement(this.getDeltaMovement().multiply(1.0D, -0.9D, 1.0D));
         }
 
         if(orbData.getExtraData().getFollowPlayer()) {
             if (this.followingTime < this.tickCount - 20 + this.getId() % 100) {
                 if (this.followingPlayer == null || this.followingPlayer.distanceToSqr(this) > 64.0D) {
-                    this.followingPlayer = this.level.getNearestPlayer(this, 8.0D);
+                    this.followingPlayer = this.level().getNearestPlayer(this, 8.0D);
                 }
 
                 this.followingTime = this.tickCount;
@@ -133,7 +133,7 @@ public class HalfHeartEntity extends Entity {
     }
 
     public boolean hurt(DamageSource p_70097_1_, float p_70097_2_) {
-        if (this.level.isClientSide || this.isRemoved()) return false; //Forge: Fixes MC-53850
+        if (this.level().isClientSide || this.isRemoved()) return false; //Forge: Fixes MC-53850
         if (this.isInvulnerableTo(p_70097_1_)) {
             return false;
         } else {
@@ -149,7 +149,7 @@ public class HalfHeartEntity extends Entity {
 
     @Override
     public void playerTouch(Player playerEntity) {
-        if (!this.level.isClientSide) {
+        if (!this.level().isClientSide) {
             if (this.throwTime == 0) {
                 if (this.age >= orbData.getExtraData().getPickupDelay()) {
                     playerEntity.take(this, 1);

@@ -11,6 +11,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -35,7 +36,7 @@ public class Registry {
 
     public static final DeferredRegister<SoundEvent> REGISTRY = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, PickableOrbs.MOD_ID);
     public static final RegistryObject<SoundEvent> GET_HEART_SOUND = REGISTRY.register("empty",
-            () -> new SoundEvent(new ResourceLocation(PickableOrbs.MOD_ID, "get_heart_sound")));
+            () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(PickableOrbs.MOD_ID, "get_heart_sound")));
 
     public static void registerOrbTypes(){
        OrbsData.getRegistry().getOrbs().forEach((name, data) -> registerOrb(name));
