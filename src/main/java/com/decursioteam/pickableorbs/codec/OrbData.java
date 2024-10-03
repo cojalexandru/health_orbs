@@ -129,7 +129,6 @@ public class OrbData {
         return texture;
     }
 
-
     public OrbData toImmutable() {
         return this;
     }
